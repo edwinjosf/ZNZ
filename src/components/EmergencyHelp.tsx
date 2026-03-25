@@ -18,6 +18,11 @@ export function EmergencyHelp({ isOpen, onClose }: EmergencyHelpProps) {
   }, [isOpen]);
 
   const loadContacts = async () => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('emergency_contacts')
@@ -39,7 +44,7 @@ export function EmergencyHelp({ isOpen, onClose }: EmergencyHelpProps) {
       case 'police':
         return <AlertCircle className="w-5 h-5" />;
       case 'hospital':
-        return <Hospital className="w-5 h-5" />;
+        return <Heart className="w-5 h-5" />;
       case 'embassy':
         return <Building2 className="w-5 h-5" />;
       default:
@@ -93,40 +98,47 @@ export function EmergencyHelp({ isOpen, onClose }: EmergencyHelpProps) {
             </div>
           ) : (
             <div className="space-y-6">
-              {Object.entries(groupedContacts).map(([category, categoryContacts]) => (
-                <div key={category}>
-                  <h3 className="text-lg font-semibold text-white mb-3 capitalize flex items-center gap-2">
-                    {getCategoryIcon(category)}
-                    {category}
-                  </h3>
-                  <div className="space-y-2">
-                    {categoryContacts.map((contact) => (
-                      <div
-                        key={contact.id}
-                        className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-white mb-1">{contact.name}</h4>
-                            {contact.description && (
-                              <p className="text-sm text-white/60">{contact.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <a
-                          href={`tel:${contact.phone_number}`}
-                          className={`w-full bg-gradient-to-r ${getCategoryColor(
-                            contact.category
-                          )} text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all mt-3`}
-                        >
-                          <Phone className="w-4 h-4" />
-                          <span>{contact.phone_number}</span>
-                        </a>
-                      </div>
-                    ))}
-                  </div>
+              {contacts.length === 0 ? (
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-sm text-white/70">
+                  Emergency contacts are currently unavailable. Add `VITE_SUPABASE_URL` and
+                  `VITE_SUPABASE_ANON_KEY` in your Vercel environment settings to enable live data.
                 </div>
-              ))}
+              ) : (
+                Object.entries(groupedContacts).map(([category, categoryContacts]) => (
+                  <div key={category}>
+                    <h3 className="text-lg font-semibold text-white mb-3 capitalize flex items-center gap-2">
+                      {getCategoryIcon(category)}
+                      {category}
+                    </h3>
+                    <div className="space-y-2">
+                      {categoryContacts.map((contact) => (
+                        <div
+                          key={contact.id}
+                          className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-white mb-1">{contact.name}</h4>
+                              {contact.description && (
+                                <p className="text-sm text-white/60">{contact.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <a
+                            href={`tel:${contact.phone_number}`}
+                            className={`w-full bg-gradient-to-r ${getCategoryColor(
+                              contact.category
+                            )} text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all mt-3`}
+                          >
+                            <Phone className="w-4 h-4" />
+                            <span>{contact.phone_number}</span>
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>
